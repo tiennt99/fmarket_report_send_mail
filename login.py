@@ -1,3 +1,5 @@
+import os
+
 import requests
 import json
 
@@ -7,8 +9,8 @@ class Login:
         url = "https://api.fmarket.vn/auth/login"
 
         payload = json.dumps({
-            "email": "tiennguyenhuu1999@gmail.com",
-            "password": "Tienmt@99",
+            "email": os.getenv("LOGIN_EMAIL"),
+            "password": os.getenv("LOGIN_PASSWORD"),
             "referralCode": None
         })
         headers = {

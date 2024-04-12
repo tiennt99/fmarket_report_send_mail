@@ -1,3 +1,4 @@
+import os
 import smtplib
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
@@ -7,7 +8,8 @@ from email import encoders
 import pandas as pd
 
 
-def send_email_(sender_email, sender_password, receiver_email, subject, body, attachment_path):
+def send_email_(sender_email, sender_password, receiver_email, subject, body, attachment_path_body,
+                attachment_path_pdf):
     # Create a multipart message
     message = MIMEMultipart()
     message["From"] = sender_email
@@ -18,7 +20,7 @@ def send_email_(sender_email, sender_password, receiver_email, subject, body, at
     message.attach(MIMEText(body, "html"))
     try:
         # Open the file to be sent
-        with open(attachment_path, "rb") as attachment:
+        with open(attachment_path_body, "rb") as attachment:
             # Read Excel file
             df = pd.read_excel(attachment)
 
@@ -29,18 +31,18 @@ def send_email_(sender_email, sender_password, receiver_email, subject, body, at
         attachment_html = MIMEText(html_table, "html")
     except Exception as ex:
         attachment_html = f"<p>Đã xảy ra lỗi khi đọc tệp: {ex}</p>"
-        
+
     message.attach(attachment_html)
-    # Attach Excel file
-    with open(attachment_path, "rb") as file:
-        part = MIMEBase("application", "octet-stream")
+    # Attach PDF file
+    with open(attachment_path_pdf, "rb") as file:
+        part = MIMEBase("application", "pdf")
         part.set_payload(file.read())
 
     encoders.encode_base64(part)
 
     part.add_header(
         "Content-Disposition",
-        f"attachment; filename= {attachment_path}",
+        f"attachment; filename= {attachment_path_pdf}",
     )
 
     # Attach the attachment to the message
@@ -49,20 +51,24 @@ def send_email_(sender_email, sender_password, receiver_email, subject, body, at
     # Log in to SMTP server and send email
     with smtplib.SMTP("smtp.gmail.com", 587) as server:
         server.starttls()
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, receiver_email, message.as_string())
+        res_login = server.login(sender_email, sender_password)
+        print(res_login)
+        res_send = server.sendmail(sender_email, receiver_email, message.as_string())
+        print(res_send)
 
 
 class Mail:
     def send_mail(self):
         # Example usage
-        sender_email = "tiennhshopee@gmail.com"
-        sender_password = "yaxn yrwa bkbq rlvh"
-        receiver_email = "openupmta99@gmail.com"
+        sender_email = os.getenv("SENDER_EMAIL")
+        sender_password = os.getenv("SENDER_PASSWORD")
+        receiver_email = os.getenv("RECEIVER_EMAIL")
         current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M")
         # Chuyển subject thành "Báo cáo" theo ngày giờ hiện tại
         subject = f"Báo cáo {current_datetime}"
         body = ""
-        attachment_path = "/home/tiennguyen/Desktop/research/ck/tool/bao_cao.xlsx"
+        attachment_path_body = "/home/tiennguyen/Desktop/research/tool/fmarket_report_send_mail/bao_cao.xlsx"
+        attachment_path_pdf = "/home/tiennguyen/Desktop/research/tool/fmarket_report_send_mail/bao_cao.pdf"
 
-        send_email_(sender_email, sender_password, receiver_email, subject, body, attachment_path)
+        send_email_(sender_email, sender_password, receiver_email, subject, body, attachment_path_body,
+                    attachment_path_pdf)
