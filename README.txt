@@ -1,0 +1,1 @@
+0 20 * * * /home/tiennguyen/anaconda3/envs/FlaskApiDocs37/bin/python /home/tiennguyen/Desktop/research/ck/tool/main.py >> /home/tiennguyen/Desktop/research/ck/tool/file.log 2>&1
